@@ -1,0 +1,51 @@
+https://blog.logrocket.com/mastering-mapped-types-typescript/
+
+
+
+Mapped types: a real-world example
+
+Now that we’ve covered the foundations upon which TypeScript’s mapped types feature is built, let’s walk through a detailed real-world example. Suppose our program keeps track of electronic devices and their manufacturers and prices. We might have a type like this to represent each device:
+
+type Device = {
+  manufacturer: string;
+  price: number;
+};
+
+Now, we’d like to ensure that we have a way to display those devices to the user in a human-readable format, so we’ll add a new type for an object that can format each property of a Device with an appropriate formatting function:
+
+type DeviceFormatter = {
+  [Key in keyof Device as `format${Capitalize<Key>}`]: (value: Device[Key]) => string;
+};
+
+Let’s pull this code block apart, piece by piece.
+
+Key in keyof Device uses the keyof type operator to generate a union of all keys in Device. Putting it inside of an index signature essentially iterates through all properties of Device and maps them to properties of DeviceFormatter.
+
+format${Capitalize<Key>} is the transformation part of the mapping and uses key remapping and template literal types to change the property name from x to formatX.
+
+(value: Device[Key]) => string; is where we utilize the indexed access type Device[Key] to indicate that the format function’s value parameter is of the type of the property we are formatting. So, formatManufacturer takes a string (the manufacturer) while formatPrice takes a number (the price).
+
+Here’s what the DeviceFormatter type looks like:
+
+type DeviceFormatter = {
+  formatManufacturer: (value: string) => string;
+  formatPrice: (value: number) => string;
+};
+
+Now, let’s suppose we add a third property, releaseYear, to our Device type:
+
+type Device = {
+  manufacturer: string;
+  price: number;
+  releaseYear: number;
+}
+
+Thanks to the power of mapped types, the DeviceFormatter type is automatically expanded to look like this without any additional work on our part:
+
+type DeviceFormatter = {
+  formatManufacturer: (value: string) => string;
+  formatPrice: (value: number) => string;
+  formatReleaseYear: (value: number) => string;
+};
+
+Any implementations of DeviceFormatter must add the new function or compilation will fail. Voilà!
